@@ -1,0 +1,14 @@
+*.jpg
+*.pth
+*.gz
+*.json
+*.txt
+*.csv
+checkpoint/:
+data/:
+feature/:
+output/:
+transformers/:
+venv/:
+
+
