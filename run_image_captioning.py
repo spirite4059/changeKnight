@@ -94,6 +94,11 @@ def main(args):
 
             batch_caption_feature = torch.cat(batch_caption_feature).to(device)
             batch_caption_feature = Map(batch_caption_feature)  #
+
+            ## 对batch_caption_feature(bz, hid_size)中的每一项，采集k个其他的caption样本进行Map编码，然后对于(bz, hid_size) 和 (bz, candidate_num, hid_size)做点乘并按一定阈值做相似性二分类 pred_预测 = (bz, candidate_num)
+            ## 对比学习label: 对batch_caption (bz, 1)中的每一项，GPT_tokenizer编码，然后对于(bz, hid_size) 和 (bz, candidate_num, hid_size)做点乘并按一定阈值做相似性二分类 label_关系 = (bz, candidate_num)
+            ## 这样可以保持Map后的embedding和语义相似度保持一致
+            ## loss_对比 = cross_entropy（pred_预测，label_关系）
             
             for i in range(len(batch_caption)):#中文
                 batch_caption[i] = prefix + batch_caption[i].split('.')[0] + '.'
@@ -105,6 +110,8 @@ def main(args):
             loss = output.loss  #output.decoder
             optimizer.zero_grad() #用GPT作模型，训练的参数---
             loss.backward()     #反向计算一次
+
+            ## loss = loss+loss_对比
 
             optimizer.step()
             l += loss.item()  #l是batch一次的损失,一个batch是16个数据
